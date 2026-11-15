@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أرخص عروض مكة</title>
+<meta name="description" content="قارن عروض هايبرات مكة واعرف تجيب كل حاجة منين بأرخص سعر">
+<meta name="theme-color" content="#0f7a4f">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1d2321;--mute:#6b7370;--line:#e4e1d8;--acc:#0f7a4f;--acc2:#e8f4ee;--warn:#b4531a}
+@media (prefers-color-scheme:dark){:root{--bg:#141716;--card:#1d2120;--ink:#ecefed;--mute:#9aa29f;--line:#2c3230;--acc:#3fbf84;--acc2:#1c2e26;--warn:#f0a35e}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:14px 14px 90px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;background:linear-gradient(135deg,#0f7a4f,#0b5c3b);color:#fff;border-radius:16px;padding:16px}
+header h1{margin:0;font-size:24px;font-weight:800}
+header p{margin:2px 0 0;color:#d6efe3;font-size:13px}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:10px 0;margin-top:6px;border-bottom:1px solid var(--line);scrollbar-width:none}
+nav.tabs button{flex:0 0 auto;background:var(--card);border:1px solid var(--line);color:var(--ink);padding:8px 14px;border-radius:999px;font-weight:600}
+nav.tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.pane{display:none}.pane.on{display:block}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px}
+label{font-weight:600;font-size:15px}
+textarea,input.in{width:100%;margin-top:8px;font:inherit;font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+textarea{min-height:80px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 16px;cursor:pointer}
+button:disabled{opacity:.5}
+.go{background:var(--acc);color:#fff}
+.ghost{background:var(--acc2);color:var(--acc)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:5px 12px;border-radius:999px;font-size:14px;font-weight:400}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+h2{font-size:18px;margin:20px 0 6px}
+h3{font-size:16px;margin:16px 0 4px}
+.need{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-top:12px;overflow:hidden}
+.need .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--acc2)}
+.need .hd span{font-size:13px;color:var(--mute)}
+.it>div:first-of-type{flex:1;min-width:0}
+.it{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
+.it .nm{font-size:15px}
+.st{font-size:13px;color:var(--mute)}
+.pr{text-align:left;white-space:nowrap}
+.pr .now{font-weight:800;font-size:18px}
+.pr .old{font-size:12px;color:var(--mute);text-decoration:line-through}
+.best{border-right:4px solid var(--acc)}
+.tag{display:inline-block;font-size:11px;background:var(--acc);color:#fff;border-radius:6px;padding:0 6px;margin-inline-start:6px}
+.off{font-size:12px;color:var(--acc);font-weight:600}
+.none{padding:12px 14px;color:var(--warn);font-size:14px}
+.note{font-size:12px;color:var(--mute);margin-top:18px}
+a.pic{color:var(--acc);text-decoration:none;font-weight:600;white-space:nowrap}
+.stp{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.stph{display:flex;justify-content:space-between;align-items:center;background:var(--acc2);padding:8px 12px}
+.stph span{font-size:13px;color:var(--mute)}
+.stp ul{list-style:none;margin:0;padding:0}
+.stp li{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-top:1px solid var(--line);font-size:15px;align-items:center}
+.tot{font-size:15px;margin-top:8px}
+.saved{color:var(--acc);font-size:13px;font-weight:600}
+.empty{color:var(--mute);text-align:center;padding:30px 10px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+td,th{border-top:1px solid var(--line);padding:7px 4px;text-align:right;vertical-align:top}
+details summary{cursor:pointer;font-weight:600;padding:6px 0}
+.msgs{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding:4px}
+.msg{padding:10px 12px;border-radius:14px;max-width:88%;white-space:pre-wrap;font-size:15px;line-height:1.6}
+.msg.me{align-self:flex-start;background:var(--acc);color:#fff}
+.msg.bot{align-self:flex-end;background:var(--bg);border:1px solid var(--line)}
+.msg.err{color:var(--warn)}
+.thumb{width:56px;height:56px;object-fit:cover;border-radius:8px;flex:0 0 auto;background:var(--bg)}
+.flygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:10px}
+.fly{text-decoration:none;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fly img{width:100%;aspect-ratio:495/679;object-fit:cover;display:block}
+.fly div{padding:6px 8px;font-size:13px}
+.userbtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;white-space:nowrap;padding:6px 12px;border-radius:999px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>أرخص عروض مكة 🛒</h1><p id="meta">جاري تحميل العروض…</p></div>
+  <button class="userbtn" id="userbtn">👤 دخول</button>
+</header>
+
+<nav class="tabs" id="tabs">
+<button data-t="plan" class="on">🚗 مشواري</button>
+<button data-t="chat">🤖 اسأل المساعد</button>
+<button data-t="flyers">📰 المجلات</button>
+<button data-t="search">🔎 دوّر على صنف</button>
+<button data-t="cats">🏷️ الأقسام</button>
+<button data-t="me">👤 حسابي</button>
+<button data-t="admin" id="tabAdmin" style="display:none">📊 لوحة المالك</button>
+</nav>
+
+<section class="pane on" id="p-plan">
+<div class="box">
+<label for="q">اكتب كل احتياجاتك (كل صنف في سطر أو بينهم فاصلة)</label>
+<textarea id="q" placeholder="مثلاً: رز، زيت، فراخ، طماطم، سمك، كاتل"></textarea>
+<div class="chips" id="quick"></div>
+<div class="row"><button class="go" id="go">طلّعلي خطة المشوار</button><button class="ghost" id="clr">مسح</button><span class="saved" id="sv"></span></div>
+</div>
+<div id="out"><div class="empty">اكتب احتياجاتك فوق ودوس «طلّعلي خطة المشوار»، وهقولك تجيب إيه من كل محل.</div></div>
+</section>
+
+<section class="pane" id="p-chat">
+<div class="box" style="padding:10px">
+<div id="msgs" class="msgs"><div class="msg bot">أهلاً 👋 أنا مساعد عروض مكة. اسألني عن أي حاجة في عروض الأسبوع.</div></div>
+<div class="chips" id="sugs"></div>
+<div class="row" style="flex-wrap:nowrap"><input class="in" id="cq" placeholder="اكتب سؤالك…" style="margin:0;flex:1"><button class="go" id="csend">إرسال</button></div>
+<div class="st" id="cnote" style="margin-top:6px">المساعد محتاج تسجيل دخول.</div>
+</div>
+</section>
+
+<section class="pane" id="p-flyers"><div id="flyout"></div></section>
+
+<section class="pane" id="p-search">
+<div class="box"><label for="sq">دوّر على أي صنف</label><input class="in" id="sq" placeholder="مثلاً: كاتل، غسالة، حفاضات، شاي…"></div>
+<div id="sout"></div>
+</section>
+
+<section class="pane" id="p-cats"><div class="chips" id="cats" style="margin-top:14px"></div><div id="catout"></div></section>
+
+<section class="pane" id="p-me"><div class="box" id="acct"></div><div id="hist"></div></section>
+
+<section class="pane" id="p-admin"><div id="admin"></div></section>
+
+<p class="note">الأسعار من مجلات عروض الهايبرات في مكة، وبتتحدث تلقائي يوم الأربع والسبت. الأحجام بتختلف من محل لمحل، فبص على العبوة قبل ما تشتري.</p>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
