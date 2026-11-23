@@ -98,8 +98,13 @@ async function main() {
     const flyers = [];
     for (const [code, slug] of Object.entries(RETAILER_PAGES)) {
       try {
-        await page.goto(`${CITY_PATH}/retailers/${slug}`, { waitUntil: "domcontentloaded", timeout: 60000 });
-        await page.waitForSelector("ul.singleflyerpage li", { timeout: 15000 }).catch(() => {});
+        for (let t = 0; t < 3; t++) {
+          await page.goto(`${CITY_PATH}/retailers/${slug}`, { waitUntil: "domcontentloaded", timeout: 60000 });
+          const ok = await page.waitForSelector("ul.singleflyerpage li", { timeout: 20000 }).then(() => true).catch(() => false);
+          if (ok) break;
+          log("مجلات", code, "فاضية — إعادة محاولة", t + 1);
+          await sleep(4000);
+        }
         await sleep(1500);
         const list = await page.evaluate(() => [...document.querySelectorAll("ul.singleflyerpage li")].map(li => {
           const a = li.querySelector('a[href*="/flyers/"]'); if (!a) return null;
@@ -109,6 +114,7 @@ async function main() {
           const title = txt.replace(/NEW|[\d.]+[KM]?\+? \+? ?Views|Valid Till.*$/g, "").replace(/\s+/g, " ").trim();
           return { slug: a.href.split("/flyers/")[1], title, till, img };
         }).filter(Boolean));
+        log("مجلات", code, list.length);
         for (const f of list) flyers.push({ store: code, ...f });
       } catch (e) { log("مجلات", code, "فشل:", e.message); }
     }
@@ -148,6 +154,16 @@ async function main() {
       }
     } else {
       log("مفيش GEMINI_API_KEY — الأسماء هتفضل إنجليزي");
+    }
+
+    // عروض اسمها فاضي في ClicFlyer: بنقرا الاسم من صورة العرض نفسها
+    const blanks = [...pricedRows, ...imageRows].filter(r => !r.name_en);
+    if (blanks.length) {
+      log("عروض من غير اسم:", blanks.length);
+      for (const r of blanks) {
+        if (GEMINI_API_KEY && await nameFromImage(r)) continue;
+        r.name_en = "Offer"; r.name_ar = "عرض (شوف الصورة)";
+      }
     }
 
     if (pricedRows.length + imageRows.length < 50) throw new Error(`عدد العروض قليل جداً (${pricedRows.length + imageRows.length}) — غالباً ClicFlyer غيّر شكل الموقع. مش هنمسح البيانات القديمة.`);
@@ -222,7 +238,35 @@ async function claude(prompt, maxTokens = 8000) {
 }
 function parseJsonArray(t) { const s = t.indexOf("["), e = t.lastIndexOf("]"); try { return JSON.parse(t.slice(s, e + 1)); } catch { return null; } }
 
+async function nameFromImage(row) {
+  try {
+    const ir = await fetch(row.img, { signal: AbortSignal.timeout(30000) });
+    if (!ir.ok) return false;
+    const b64 = Buffer.from(await ir.arrayBuffer()).toString("base64");
+    const mime = /\.png/i.test(row.img) ? "image/png" : /\.jpe?g/i.test(row.img) ? "image/jpeg" : "image/webp";
+    const prompt = `دي صورة عرض سوبر ماركت في السعودية. اقرأ اسم المنتج المكتوب على الصورة (غالبا بالعربي والإنجليزي) وارجع JSON object بس بالشكل: {"en":"اسم المنتج بالإنجليزي","ar":"اسم المنتج بالعربي قصير","g":"مجموعة الصنف بكلمة أو اتنين للبحث","c":"القسم واحد بس من: ${CATS.join("، ")}"}`;
+    for (const model of (await pickModels()).slice(0, 3)) {
+      if (Date.now() > AI_DEADLINE) return false;
+      try {
+        const r = await fetch(`${GEM}/models/${model}:generateContent`, {
+          method: "POST",
+          headers: { "x-goog-api-key": GEMINI_API_KEY, "content-type": "application/json" },
+          body: JSON.stringify({ contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: b64 } }, { text: prompt }] }], generationConfig: { temperature: 0.1, responseMimeType: "application/json" } }),
+          signal: AbortSignal.timeout(60000),
+        });
+        if (!r.ok) { log("Gemini صورة", model, r.status); continue; }
+        const j = await r.json();
+        const t = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("");
+        const o = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+        if (o.en || o.ar) { row.name_en = o.en || o.ar; row.name_ar = o.ar || o.en; row.grp = o.g; row.category = o.c; await sleep(4000); return true; }
+      } catch (e) { log("Gemini صورة", model, "خطأ:", e.name || e.message); }
+    }
+  } catch (e) {}
+  return false;
+}
+
 async function aiEnrich(rows, detailed) {
+  rows = rows.filter(r => r.name_en);
   const B = 40;
   for (let i = 0; i < rows.length; i += B) {
     const chunk = rows.slice(i, i + B);
