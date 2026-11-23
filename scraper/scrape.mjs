@@ -143,9 +143,9 @@ async function main() {
     // ===== الترجمة والتصنيف بالذكاء الاصطناعي =====
     if (GEMINI_API_KEY) {
       log("ترجمة وتصنيف بالذكاء الاصطناعي…");
-      await aiEnrich(pricedRows, true);
-      await aiEnrich(imageRows, false);
-      await aiFlyerTitles(flyerRows);
+      for (const step of [() => aiEnrich(pricedRows, true), () => aiEnrich(imageRows, false), () => aiFlyerTitles(flyerRows)]) {
+        try { await step(); } catch (e) { log("الترجمة وقفت:", e.message); }
+      }
     } else {
       log("مفيش GEMINI_API_KEY — الأسماء هتفضل إنجليزي");
     }
@@ -185,7 +185,7 @@ async function pickModels() {
   if (MODELS) return MODELS;
   if (GEMINI_MODEL) return (MODELS = [GEMINI_MODEL]);
   try {
-    const j = await fetch(`${GEM}/models?pageSize=200`, { headers: { "x-goog-api-key": GEMINI_API_KEY } }).then(r => r.json());
+    const j = await fetch(`${GEM}/models?pageSize=200`, { headers: { "x-goog-api-key": GEMINI_API_KEY }, signal: AbortSignal.timeout(30000) }).then(r => r.json());
     const ver = n => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
     MODELS = (j.models || [])
       .filter(m => (m.supportedGenerationMethods || []).includes("generateContent"))
@@ -197,17 +197,24 @@ async function pickModels() {
   log("موديلات Gemini:", MODELS.slice(0, 4).join(", "));
   return MODELS;
 }
+const AI_DEADLINE = Date.now() + 25 * 60 * 1000; // بعد 25 دقيقة نوقف الترجمة ونحفظ اللي خلص
 async function claude(prompt, maxTokens = 8000) {
   const models = (await pickModels()).slice(0, 4);
   for (let attempt = 0; attempt < 3; attempt++) {
     for (const model of models) {
-      const r = await fetch(`${GEM}/models/${model}:generateContent`, {
-        method: "POST",
-        headers: { "x-goog-api-key": GEMINI_API_KEY, "content-type": "application/json" },
-        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.2, responseMimeType: "application/json" } }),
-      });
-      if (r.ok) { const j = await r.json(); await sleep(7000); return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join(""); }
-      log("Gemini", model, r.status, (await r.text().catch(() => "")).slice(0, 200));
+      if (Date.now() > AI_DEADLINE) return "";
+      try {
+        const r = await fetch(`${GEM}/models/${model}:generateContent`, {
+          method: "POST",
+          headers: { "x-goog-api-key": GEMINI_API_KEY, "content-type": "application/json" },
+          body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.2, responseMimeType: "application/json" } }),
+          signal: AbortSignal.timeout(120000), // أقصى انتظار دقيقتين للطلب الواحد
+        });
+        if (r.ok) { const j = await r.json(); await sleep(7000); return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join(""); }
+        log("Gemini", model, r.status, (await r.text().catch(() => "")).slice(0, 200));
+      } catch (e) {
+        log("Gemini", model, "خطأ شبكة/مهلة:", e.name || e.message);
+      }
     }
     await sleep(30000 * (attempt + 1)); // الخطة المجانية ليها حد في الدقيقة
   }
@@ -216,7 +223,7 @@ async function claude(prompt, maxTokens = 8000) {
 function parseJsonArray(t) { const s = t.indexOf("["), e = t.lastIndexOf("]"); try { return JSON.parse(t.slice(s, e + 1)); } catch { return null; } }
 
 async function aiEnrich(rows, detailed) {
-  const B = 80;
+  const B = 40;
   for (let i = 0; i < rows.length; i += B) {
     const chunk = rows.slice(i, i + B);
     const list = chunk.map((r, k) => `${k}|${r.name_en}`).join("\n");
