@@ -19,9 +19,20 @@ const imgLink = o => o.img ? ` · <a class="pic" href="${esc(o.img)}" target="_b
 const when = t => t ? new Date(t).toLocaleString("ar-SA",{dateStyle:"medium",timeStyle:"short"}) : "";
 
 // ===== تحميل البيانات =====
+// Supabase بيرجّع 1000 صف بس في الطلب الواحد، فبنحمّل على دفعات
+async function fetchAllOffers(){
+  let out = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from("offers").select("*").order("id").range(from, from + 999);
+    if (error) return { data: null, error };
+    out = out.concat(data || []);
+    if (!data || data.length < 1000) break;
+  }
+  return { data: out, error: null };
+}
 async function loadData(){
   const [{data:o,error:e1},{data:f}] = await Promise.all([
-    sb.from("offers").select("*").limit(5000),
+    fetchAllOffers(),
     sb.from("flyers").select("*").order("valid_till").limit(500),
   ]);
   if (e1) { $("meta").textContent = "مش قادر أحمّل العروض دلوقتي، جرب تاني."; return; }
